@@ -2,9 +2,9 @@ name: Vite.js CI
 
 on:
   push:
-    branches: ['react-demo']
+    branches: ['main']
   pull_request:
-    branches: ['react-demo']
+    branches: ['main']
   workflow_dispatch:
 
 env:
