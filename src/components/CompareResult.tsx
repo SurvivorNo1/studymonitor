@@ -14,6 +14,7 @@ const { Search } = Input;
 const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgids }) => {
   const [displayMode, setDisplayMode] = useState<'all' | 'unlearned' | 'learned'>('all');
   const [searchText, setSearchText] = useState<string>('');
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const handleDownload = () => {
     const worksheet = XLSX.utils.json_to_sheet(unmatchedList);
@@ -34,10 +35,18 @@ const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgid
     }
   }).filter(record => {
     if (!searchText) return true;
-    return Object.values(record).some(value => value.toString().toLowerCase().includes(searchText.toLowerCase()));
+    return Object.values(record).some((value: unknown) => {
+      if (typeof value === 'string' || typeof value === 'number') {
+        return value.toString().toLowerCase().includes(searchText.toLowerCase());
+      }
+      return false;
+    });
   });
 
   const columns = filteredList.length > 0 ? Object.keys(filteredList[0]).map(key => ({ title: key, dataIndex: key })) : [];
+
+  // 添加唯一键
+  const processedData = filteredList.map((item, index) => ({ ...item, key: index.toString() }));
 
   return (
     <div>
@@ -61,15 +70,31 @@ const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgid
           style={{ width: 200, marginLeft: '20px' }}
         />
         <Button type="primary" onClick={handleDownload} style={{ marginLeft: '20px' }}>下载表格</Button>
+        <span style={{ marginLeft: '20px' }}>每页行数:</span>
+        <Select
+          value={pageSize}
+          onChange={(value) => setPageSize(value)}
+          style={{ width: '80px' }}
+        >
+            <Option value={5}>5</Option>
+            <Option value={10}>10</Option>
+            <Option value={20}>20</Option>
+            <Option value={50}>50</Option>
+        </Select>
+        <span style={{ marginLeft: '20px' }}>
+          总数: {filteredList.length}
+        </span>
       </div>
       <Table
-        dataSource={filteredList}
+        dataSource={processedData}
         columns={columns}
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize }}
         scroll={{ x: true }}
         bordered
-        rowKey={(record, index) => index.toString()} // 使用索引作为唯一键
+        rowKey="key" // 使用添加的唯一字段作为键
       />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+      </div>
     </div>
   );
 };

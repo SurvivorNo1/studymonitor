@@ -25,9 +25,10 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
         const workbook = XLSX.read(binaryStr, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        setData(jsonData);
-        setFilteredData(jsonData);
+        const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet);
+        const processedData = jsonData.map((item, index) => ({ ...item, key: index.toString() }));
+        setData(processedData);
+        setFilteredData(processedData);
       };
       reader.readAsArrayBuffer(file);
     };
@@ -73,16 +74,19 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
         footer={null}
         width="80%"
       >
-        <Search
-          placeholder="Search..."
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ marginBottom: 16 }}
-        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <Search
+            placeholder="Search..."
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: '300px' }}
+          />
+          <div style={{ fontSize: '16px', fontWeight: 500 }}>总数: {filteredData.length}</div>
+        </div>
         <Table
           dataSource={currentRows}
           columns={columns}
           pagination={false}
-          rowKey={(_record, index) => index.toString()}
+          rowKey="key" // 使用添加的唯一字段作为键
           scroll={{ x: 'max-content' }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
@@ -97,6 +101,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
             <Option value={10}>10</Option>
             <Option value={20}>20</Option>
             <Option value={50}>50</Option>
+            <Option value={100}>100</Option>
           </Select>
         </div>
       </Modal>

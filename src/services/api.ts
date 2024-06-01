@@ -2,8 +2,8 @@ import axios from 'axios'; // 引入 axios 库
 import Crawler from './crawler'; // 假设Crawler类位于相同的目录下
 import { OrganizationData, StageData } from './types'; // 引入组织数据和阶段数据的类型定义
 
-//fetchCombinedData
-export const fetchCombinedData = async (username: string, password: string) => {
+// fetchCombinedData
+export const fetchCombinedData = async (username: string, password: string): Promise<{ organizationData: OrganizationData[], stageData: StageData[] }> => {
   try {
     // 创建Crawler实例
     const crawler = new Crawler(username, password);
@@ -12,7 +12,7 @@ export const fetchCombinedData = async (username: string, password: string) => {
     const isLoggedIn = await crawler.login();
     if (!isLoggedIn) {
       console.log('登录失败');
-      return { organizationData: [], stageData: [] } as { organizationData: OrganizationData[], stageData: StageData[] };
+      return { organizationData: [], stageData: [] };
     }
 
     // 获取组织数据
@@ -27,11 +27,11 @@ export const fetchCombinedData = async (username: string, password: string) => {
     return { organizationData, stageData };
   } catch (error) {
     console.error('Error fetching combined data:', error); // 输出捕获到的错误信息
-    return { organizationData: [], stageData: [] } as { organizationData: OrganizationData[], stageData: StageData[] };
+    return { organizationData: [], stageData: [] };
   }
 };
 
-//fetchOrganizationData
+// fetchOrganizationData
 export const fetchOrganizationData = async (username: string, password: string): Promise<OrganizationData[]> => {
   try {
     // 创建Crawler实例
@@ -39,13 +39,13 @@ export const fetchOrganizationData = async (username: string, password: string):
 
     // 登录
     const isLoggedIn = await crawler.login();
-    await crawler.getOrganizationsData();
     if (!isLoggedIn) {
       console.log('登录失败');
       return [];
     }
 
-    // 返回组织数据
+    // 获取组织数据
+    await crawler.getOrganizationsData();
     return crawler.orginazationsData;
   } catch (error) {
     console.error('Error fetching organization data:', error); // 输出捕获到的错误信息
@@ -53,7 +53,7 @@ export const fetchOrganizationData = async (username: string, password: string):
   }
 };
 
-//fetchStageData
+// fetchStageData
 export const fetchStageData = async (username: string, password: string): Promise<StageData[]> => {
   try {
     // 创建Crawler实例
@@ -61,13 +61,13 @@ export const fetchStageData = async (username: string, password: string): Promis
 
     // 登录
     const isLoggedIn = await crawler.login();
-    await crawler.getStagesData();
     if (!isLoggedIn) {
       console.log('登录失败');
       return [];
     }
 
-    // 返回阶段数据
+    // 获取阶段数据
+    await crawler.getStagesData();
     return crawler.stagesData;
   } catch (error) {
     console.error('Error fetching stage data:', error); // 输出捕获到的错误信息
@@ -76,28 +76,33 @@ export const fetchStageData = async (username: string, password: string): Promis
 };
 
 // fetchCompleteLists
-export const fetchCompleteLists = async (username: string, password: string, sid: number, orgids: number[]): Promise<File[] | null> => {
+export const fetchCompleteLists = async (username: string, password: string, sid: number, orgids: number[]): Promise<File[]> => {
   try {
     // 创建Crawler实例
     const crawler = new Crawler(username, password);
 
     // 登录
     const isLoggedIn = await crawler.login();
-    await crawler.getOrganizationsData();
-    await crawler.getStagesData();
-    
     if (!isLoggedIn) {
       console.log('登录失败');
-      return null;
+      return [];
     }
+
+    // 获取组织数据和阶段数据
+    await crawler.getOrganizationsData();
+    await crawler.getStagesData();
 
     // 获取所有下载链接
     const allDownloadUrls: string[] = [];
     for (const orgid of orgids) {
       const downloadUrl = await crawler.getExcelDownloadLink(orgid, sid);
-      allDownloadUrls.push(downloadUrl);
+      if (downloadUrl !== null) {
+        allDownloadUrls.push(downloadUrl);
+      }
     }
+
     console.log('All download URLs:', allDownloadUrls);
+
     // 实现下载
     const files: File[] = [];
     for (const [index, downloadUrl] of allDownloadUrls.entries()) {
@@ -115,11 +120,12 @@ export const fetchCompleteLists = async (username: string, password: string, sid
 
       files.push(file);
     }
+
     console.log('Downloaded files:', files);
     // 返回下载的文件对象数组
     return files;
   } catch (error) {
     console.error('Error fetching complete lists:', error); // 输出捕获到的错误信息
-    return null;
+    return [];
   }
 };

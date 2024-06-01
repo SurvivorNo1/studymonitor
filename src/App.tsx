@@ -104,9 +104,9 @@ const App: React.FC = () => {
     setIsHelpModalVisible(false);
   };
 
-  const handleSelectChange = (selectedRowKeys: React.SetStateAction<string[]>, selectedRows: { map: (arg0: (row: { orgName: any; }) => any) => React.SetStateAction<never[]>; }) => {
-    setOrgids(selectedRowKeys);
-    setOrgNames(selectedRows.map((row: { orgName: any; }) => row.orgName));
+  const handleSelectChange = (selectedRowKeys: React.Key[], selectedRows: OrganizationData[]) => {
+    setOrgids(selectedRowKeys as string[]);
+    setOrgNames(selectedRows.map(row => row.orgName));
   };
 
   const rowSelection = {
@@ -131,7 +131,7 @@ const App: React.FC = () => {
         <Title level={2} style={{ textAlign: 'center', margin: 0, width: '100%' }}>Study Monitor</Title>
         <Button type="link" onClick={handleHelpModalOpen} style={{ position: 'absolute', right: '20px' }}>使用说明</Button>
       </Header>
-      <Content >
+      <Content>
         <Row gutter={20} justify="space-between">
           <Col xs={24} md={8}>
             <div style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
@@ -154,7 +154,7 @@ const App: React.FC = () => {
                     ))}
                   </select>
                 </Form.Item>
-                <Form.Item label="已选组织列表(Orgids):" >
+                <Form.Item label="已选组织列表(Orgids):">
                   <div>
                     {orgids.map((sid, index) => {
                       const org = organizationData.find(data => data.orgId === parseInt(sid));
@@ -264,7 +264,7 @@ const App: React.FC = () => {
           - 核对过程中，请耐心等待，系统会处理并显示结果。
         </Paragraph>
       </Modal>
-      </Layout>
+    </Layout>
   );
 };
 
