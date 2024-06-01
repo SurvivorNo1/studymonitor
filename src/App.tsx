@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isHelpModalVisible, setIsHelpModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [orgNames, setOrgNames] = useState<string[]>([]);
+  const [_orgNames, setOrgNames] = useState<string[]>([]);
 
   useEffect(() => {
     setUsername(localStorage.getItem('username') || '');

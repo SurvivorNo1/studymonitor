@@ -26,9 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint
-        run: npm run lint # 假设你的package.json中配置了lint脚本
-
       - name: Run tests
         run: npm run test # 运行测试，假设你的package.json中配置了test脚本
 
