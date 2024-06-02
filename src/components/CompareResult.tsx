@@ -69,7 +69,7 @@ const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgid
           onSearch={(value) => setSearchText(value)}
           style={{ width: 200, marginLeft: '20px' }}
         />
-        <Button type="primary" onClick={handleDownload} style={{ marginLeft: '20px' }}>下载表格</Button>
+        <Button type="primary" onClick={handleDownload} style={{ marginLeft: '20px' }}>下载</Button>
         <span style={{ marginLeft: '20px' }}>每页行数:</span>
         <Select
           value={pageSize}

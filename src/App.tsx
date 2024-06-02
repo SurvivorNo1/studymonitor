@@ -6,6 +6,7 @@ import { compareExcels } from './services/excelHandler';
 import { StageData, OrganizationData } from './services/types';
 import { fetchCompleteLists, fetchCombinedData } from './services/api';
 import { Input, Spin, Table, Button, Modal, Form, Typography, Layout, Row, Col } from 'antd';
+import { GithubOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
 const { Title, Paragraph } = Typography;
@@ -127,10 +128,20 @@ const App: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', padding: '20px' }}>
-      <Header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e8e8e8', marginBottom: '10px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '8px' }}>
-        <Title level={2} style={{ textAlign: 'center', margin: 0, width: '100%' }}>Study Monitor</Title>
-        <Button type="link" onClick={handleHelpModalOpen} style={{ position: 'absolute', right: '20px' }}>使用说明</Button>
-      </Header>
+     <Header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e8e8e8', marginBottom: '10px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '8px', padding: '0 20px' }}>
+      <div style={{ flex: 1 }}>
+        {/* 空的 div 用于占位，使中间部分居中 */}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 2 }}>
+        <Title level={2} style={{ margin: 0 }}>Study Monitor</Title>
+        <a href="https://github.com/SurvivorNo1/studymonitor" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '5px' }}>
+          <GithubOutlined style={{ fontSize: '24px' }} />
+        </a>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+        <Button type="link" onClick={handleHelpModalOpen}>使用说明</Button>
+      </div>
+    </Header>
       <Content>
         <Row gutter={20} justify="space-between">
           <Col xs={24} md={8}>
@@ -191,7 +202,7 @@ const App: React.FC = () => {
                   <FileUpload onFileUpload={setTotalListFile} />
                 </Form.Item>
                 <Form.Item>
-                  <Button type="primary" onClick={handleCompare} disabled={loading} block>对比'已选组织'与'花名册'</Button>
+                  <Button type="primary" onClick={handleCompare} disabled={loading} block>对比</Button>
                 </Form.Item>
                 {totalListFile && <FilePreview file={totalListFile} />}
                 {completeLists.length > 0 && (
