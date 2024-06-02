@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: npm run build # 构建项目，假设你的package.json中配置了build脚本
         env:
-          BASE_URL: /sonorlink_website/ # 设置基路径为仓库名
+          BASE_URL: /studymonitor/ # 设置基路径为仓库名
 
       - name: Copy index.html for SPA support
         run: cp ${{ env.BUILD_DIR }}/index.html ${{ env.BUILD_DIR }}/404.html
