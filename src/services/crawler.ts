@@ -14,6 +14,7 @@ class Crawler {
     public orginazationsData: OrganizationData[];
     public latestStageId: number;
     private orgId: number;
+    public orgName: string;
     private session: AxiosInstance;
     private debug: boolean;
     private loginState: boolean;
@@ -33,6 +34,7 @@ class Crawler {
         this.orginazationsData = [];
         this.latestStageId = -1;
         this.orgId = -1;
+        this.orgName = '';
         this.session = axios.create({
             baseURL: this.baseURL
         });
@@ -55,8 +57,10 @@ class Crawler {
             } else {
                 this.headers.token = responseData.data.token;
                 this.orgId = responseData.data.orgId;
+                this.orgName = responseData.data.username;
                 this.token = this.headers.token;
                 this.loginState = true;
+                sessionStorage.setItem('token', this.token);
                 return this.headers.token;
             }
         } catch (error) {
@@ -121,11 +125,12 @@ class Crawler {
                     headers: this.headers
                 });
                 const responseData = response.data;
+                console.log(responseData)
                 this.orginazationsData = responseData.data.map((organization: any) => ({
                     orgId: organization.orgId,
                     orgName: organization.orgName,
-                    partakePercent: organization.partakePercent
                 }));
+                this.orginazationsData.push({orgId:this.orgId, orgName:this.orgName});
                 return true;
             } catch (error) {
                 console.error('获取机构数据错误:', error);

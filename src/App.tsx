@@ -44,15 +44,6 @@ const App: React.FC = () => {
   }, [username, password, sid, orgids]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { organizationData, stageData } = await fetchCombinedData(username, password);
-      setStageData(stageData);
-      setOrganizationData(organizationData.sort((a, b) => a.orgId - b.orgId));
-    };
-    fetchData();
-  }, [username, password]);
-
-  useEffect(() => {
     setFilteredOrganizationData(
       organizationData.filter((data) =>
         data.orgName.toLowerCase().includes(searchText.toLowerCase())
@@ -67,11 +58,17 @@ const App: React.FC = () => {
     }
     setLoading(true);
     try {
-      const lists = await fetchCompleteLists(username, password, parseInt(sid), orgids.map(id => parseInt(id)));
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please log in first!');
+      }
+      const lists = await fetchCompleteLists(parseInt(sid), orgids.map(id => parseInt(id)),token);
       setCompleteLists(lists);
     } catch (error) {
-      console.error('Error fetching complete lists:', error);
-      alert('An error occurred while fetching complete lists.');
+      if (error instanceof Error) {
+        console.error('Error fetching complete lists:', error);
+        alert('An error occurred while fetching complete lists: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -87,6 +84,15 @@ const App: React.FC = () => {
       const unmatched = await compareExcels(totalListFile, completeLists);
       setUnmatchedList(unmatched);
     }
+  };
+
+  const handleLogin = () => {
+    const fetchData = async () => {
+      const { organizationData, stageData } = await fetchCombinedData(username, password);
+      setStageData(stageData);
+      setOrganizationData(organizationData.sort((a, b) => a.orgId - b.orgId));
+    };
+    fetchData();
   };
 
   const handleOpenModal = () => {
@@ -128,20 +134,20 @@ const App: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', padding: '20px' }}>
-     <Header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e8e8e8', marginBottom: '10px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '8px', padding: '0 20px' }}>
-      <div style={{ flex: 1 }}>
-        {/* 空的 div 用于占位，使中间部分居中 */}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 2 }}>
-        <Title level={2} style={{ margin: 0 }}>Study Monitor</Title>
-        <a href="https://github.com/SurvivorNo1/studymonitor" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '5px' }}>
-          <GithubOutlined style={{ fontSize: '24px' }} />
-        </a>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
-        <Button type="link" onClick={handleHelpModalOpen}>使用说明</Button>
-      </div>
-    </Header>
+      <Header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e8e8e8', marginBottom: '10px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '8px', padding: '0 20px' }}>
+        <div style={{ flex: 1 }}>
+          {/* 空的 div 用于占位，使中间部分居中 */}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 2 }}>
+          <Title level={2} style={{ margin: 0 }}>Study Monitor</Title>
+          <a href="https://github.com/SurvivorNo1/studymonitor" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '5px' }}>
+            <GithubOutlined style={{ fontSize: '24px' }} />
+          </a>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+          <Button type="link" onClick={handleHelpModalOpen}>使用说明</Button>
+        </div>
+      </Header>
       <Content>
         <Row gutter={20} justify="space-between">
           <Col xs={24} md={8}>
@@ -153,6 +159,9 @@ const App: React.FC = () => {
                 </Form.Item>
                 <Form.Item label="Password">
                   <Input.Password value={password} onChange={(e) => setPassword(e.target.value)} />
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" onClick={handleLogin} block>登录</Button>
                 </Form.Item>
                 <Form.Item label="已选期数(Sid):">
                   <p>{sid}</p>
@@ -224,56 +233,50 @@ const App: React.FC = () => {
         </Row>
       </Content>
       <Modal title="使用说明" open={isHelpModalVisible} onOk={handleHelpModalClose} onCancel={handleHelpModalClose}>
-        <Title level={4}>简介</Title>
-        <Paragraph>
-          本应用是一个 Excel 比较工具，旨在帮助用户核对组织成员的学习时间和完成情况。通过输入用户信息、选择期数和组织，用户可以获取组织的学习情况，并上传自己的花名册进行核对。最终，用户可以预览和下载对比结果。
-        </Paragraph>
-        <Title level={5}>使用步骤</Title>
-        <Paragraph>
-          <strong>1. 输入用户信息</strong>
-          <br />
-          - 用户名 (Username)：在“输入”面板中，找到“Username”字段，输入您的用户名。
-          <br />
-          - 密码 (Password)：在“输入”面板中，找到“Password”字段，输入您的密码。
-        </Paragraph>
-        <Paragraph>
-          <strong>2. 查看所属组织</strong>
-          <br />
-          - 期数 (Sid)：在“输入”面板中，找到“已选期数Sid”字段。点击下拉菜单，选择您所需的期数。期数的格式为 `snum (sid: id)`，例如 `2024 (sid: 1)`。
-          <br />
-          - 选择组织 (Orgid)：在“输入”面板中，找到“已选组织Orgid”字段。点击“Select Orgid”按钮，打开选择组织的模态框。在模态框中，您可以通过搜索框快速查找组织。勾选您需要核对的组织。点击“Ok”按钮确认选择。
-        </Paragraph>
-        <Paragraph>
-          <strong>3. 获取组织的学习情况</strong>
-          <br />
-          - 获取列表 (Fetch Lists)：在“输入”面板中，确认已输入用户名、密码，并选择了期数和组织。点击“Fetch Lists”按钮，获取所选组织的学习情况。如果获取过程中出现错误，系统会提示您相关信息。
-        </Paragraph>
-        <Paragraph>
-          <strong>4. 上传花名册</strong>
-          <br />
-          - 上传文件 (Upload File)：在“输入”面板中，找到文件上传组件。点击上传区域，选择您准备的花名册文件。上传成功后，您可以在页面上预览上传的文件。
-        </Paragraph>
-        <Paragraph>
-          <strong>5. 核对学习情况</strong>
-          <br />
-          - 对比 (Compare)：在“输入”面板中，确认已上传花名册文件，并获取了组织的学习情况。点击“Compare”按钮，系统会根据获取的组织和花名册中的人员信息，核对学习时间和完成情况。核对结果会显示在“输出”面板中。
-        </Paragraph>
-        <Paragraph>
-          <strong>6. 预览和下载对比结果</strong>
-          <br />
-          - 预览结果：在“输出”面板中，您可以查看核对后的结果列表。未匹配的列表会显示在页面上，方便您进行进一步处理。
-          <br />
-          - 下载结果：在“输出”面板中，找到下载按钮，点击即可下载对比结果文件。
-        </Paragraph>
-        <Paragraph>
-          <strong>注意事项</strong>
-          <br />
-          - 请确保输入的用户名和密码正确，以便成功获取组织的学习情况。
-          <br />
-          - 上传的花名册文件应为 Excel 格式，确保文件内容格式正确，以便系统进行有效核对。
-          <br />
-          - 核对过程中，请耐心等待，系统会处理并显示结果。
-        </Paragraph>
+      <Title level={4}>简介</Title>
+    <Paragraph>
+      虽然不明显，但这是一个监控QNDXX的工具，旨在帮助核对组织成员的大学习完成情况。通过输入用户信息、选择期数和组织，用户可以获取组织的学习情况，并上传自己的花名册进行核对。最终，用户可以预览和下载对比结果。
+    </Paragraph>
+      <Paragraph>
+      <strong>注意事项和免责声明</strong>
+      <br />
+      - 基于爬虫，所以请节制使用，以免账号被封，本工具不对任何使用后果负责。
+      <br />
+      - 上传的花名册文件应为'.xlsx'格式，文件格式至少含'姓名''组织名称'两列。
+      <br />
+      - 只测试过swjtu的scyol网址下的查询哈,这是一个pure的前端项目，不会上传任何数据到服务器，放心使用。
+    </Paragraph>
+    <Title level={5}>使用步骤</Title>
+    <Paragraph>
+      <strong>1. 输入信息</strong>
+      <br />
+      - 输入用户名、密码。然后点击“登录”。
+    </Paragraph>
+    <Paragraph>
+      <strong>2. 选择组织</strong>
+      <br />
+      - 登录后才会有组织和期数，然后选择期数、组织。
+    </Paragraph>
+    <Paragraph>
+      <strong>3. 获取学习情况</strong>
+      <br />
+      - 点击“获取'已选组织'学习情况”。可在下方预览获取的表格
+    </Paragraph>
+    <Paragraph>
+      <strong>4. 上传花名册</strong>
+      <br />
+      - 上传.xlsx文件(excel表格)。可在下方预览上传的表格
+    </Paragraph>
+    <Paragraph>
+      <strong>5. 核对学习情况</strong>
+      <br />
+      - 点击“对比”。
+    </Paragraph>
+    <Paragraph>
+      <strong>6. 查看和下载结果</strong>
+      <br />
+      - 预览、下载结果。
+    </Paragraph>
       </Modal>
     </Layout>
   );

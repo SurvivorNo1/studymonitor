@@ -9,6 +9,5 @@ export interface StageData {
   export interface OrganizationData {
     orgId: number;
     orgName: string;
-    partakePercent: string;
   }
   

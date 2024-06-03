@@ -76,26 +76,22 @@ export const fetchStageData = async (username: string, password: string): Promis
 };
 
 // fetchCompleteLists
-export const fetchCompleteLists = async (username: string, password: string, sid: number, orgids: number[]): Promise<File[]> => {
+export const fetchCompleteLists = async (sid: number, orgids: number[],token:string): Promise<File[]> => {
   try {
-    // 创建Crawler实例
-    const crawler = new Crawler(username, password);
-
-    // 登录
-    const isLoggedIn = await crawler.login();
-    if (!isLoggedIn) {
-      console.log('登录失败');
-      return [];
-    }
-
-    // 获取组织数据和阶段数据
-    await crawler.getOrganizationsData();
-    await crawler.getStagesData();
-
+    
     // 获取所有下载链接
     const allDownloadUrls: string[] = [];
     for (const orgid of orgids) {
-      const downloadUrl = await crawler.getExcelDownloadLink(orgid, sid);
+
+      let downloadUrl = 'https://dxx.scyol.com/backend/study/student/excel?';
+      // 根据参数情况构建下载链接
+      if (orgid !== undefined) {
+        downloadUrl += `orgId=${orgid}&`;
+      }
+      if (sid !== undefined) {
+        downloadUrl += `stagesId=${sid}&`;
+      }
+      downloadUrl += `name=&tel=&token=${token}`;
       if (downloadUrl !== null) {
         allDownloadUrls.push(downloadUrl);
       }
@@ -126,6 +122,7 @@ export const fetchCompleteLists = async (username: string, password: string, sid
     return files;
   } catch (error) {
     console.error('Error fetching complete lists:', error); // 输出捕获到的错误信息
+    alert(error);
     return [];
   }
 };
