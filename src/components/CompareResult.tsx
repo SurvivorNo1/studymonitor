@@ -17,11 +17,10 @@ const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgid
   const [pageSize, setPageSize] = useState<number>(10);
 
   const handleDownload = () => {
-    const worksheet = XLSX.utils.json_to_sheet(unmatchedList);
+    const worksheet = XLSX.utils.json_to_sheet(filteredList);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    const orgidsStr = orgids.join('_');
-    const fileName = `UnmatchedList_sid_${sid}_orgids_${orgidsStr}.xlsx`;
+    const fileName = `List_sid_${sid}_${displayMode}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
 
@@ -76,10 +75,10 @@ const CompareResult: React.FC<CompareResultProps> = ({ unmatchedList, sid, orgid
           onChange={(value) => setPageSize(value)}
           style={{ width: '80px' }}
         >
-            <Option value={5}>5</Option>
-            <Option value={10}>10</Option>
-            <Option value={20}>20</Option>
-            <Option value={50}>50</Option>
+          <Option value={5}>5</Option>
+          <Option value={10}>10</Option>
+          <Option value={20}>20</Option>
+          <Option value={50}>50</Option>
         </Select>
         <span style={{ marginLeft: '20px' }}>
           总数: {filteredList.length}
